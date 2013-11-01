@@ -1,11 +1,14 @@
 package berlin.strategy.starter;
 
+import java.util.List;
 import java.util.Random;
 
 import berlin.game.GameState;
 import berlin.game.Node;
 import berlin.game.Strategy;
 import berlin.game.StrategyFactory;
+
+import com.google.common.collect.Lists;
 
 public class AllInAllTheTimeFactory implements StrategyFactory {
 
@@ -30,20 +33,16 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 			for (Node playerNode : gameState.getPlayerNodes()) {
 				int troopsLeft = playerNode.getNumberOfSolders();
 
-				Iterable<Node> placesToGo = playerNode.getOutboundNeighbours();
+				List<Node> placesToGo = Lists.newArrayList(playerNode.getOutboundNeighbours());
+				
+				int nodeAverage = troopsLeft / placesToGo.size();
 
 				for (Node destination : placesToGo) {
 					if (troopsLeft <= 0) {
 						break;
 					}
 					
-					int moving = 0;
-					
-					if (destination.getNumberOfSolders() < troopsLeft) {
-						moving = troopsLeft - destination.getNumberOfSolders();
-					}
-
-					gameState.moveTroops(playerNode, destination, moving);
+					gameState.moveTroops(playerNode, destination, nodeAverage);
 				}
 			}
 		}
