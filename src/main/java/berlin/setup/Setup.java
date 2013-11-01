@@ -6,7 +6,7 @@ import berlin.game.StrategyFactory;
 import berlin.game.TimeoutGameRequestHandler;
 import berlin.servlet.BerlinAiServlet;
 import berlin.servlet.RequestResponseMapper;
-import berlin.strategy.starter.*;
+import berlin.strategy.starter.RandomStormTrooperFactory;
 
 public abstract class Setup {
 
@@ -16,7 +16,7 @@ public abstract class Setup {
 	
 	public static HttpServlet createServlet() {
 		return new BerlinAiServlet(
-				"JOHN CRAWFORD",
+				"WOLVERINE",
 				RequestResponseMapper.statefulRequestResponseMapper(),
 				new TimeoutGameRequestHandler(createStrategyFactory()));
 	}
