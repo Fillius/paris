@@ -6,12 +6,12 @@ import berlin.game.StrategyFactory;
 import berlin.game.TimeoutGameRequestHandler;
 import berlin.servlet.BerlinAiServlet;
 import berlin.servlet.RequestResponseMapper;
-import berlin.strategy.starter.RandomStormTrooperFactory;
+import berlin.strategy.starter.AllInAllTheTimeFactory;
 
 public abstract class Setup {
 
 	public static StrategyFactory createStrategyFactory() {
-		return new RandomStormTrooperFactory();
+		return new AllInAllTheTimeFactory();
 	}
 	
 	public static HttpServlet createServlet() {
