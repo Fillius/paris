@@ -6,9 +6,17 @@
 			<pattern> %-5level %logger{36} - %msg%n</pattern>
 		</encoder>
 	</appender>
+	
+	<appender name="WEB" class="berlin.logging.FixedMemoryLogbackAppender">
+		<encoder>
+			<!-- a bunch of information is logged automatically by Heroku, so we skip timestamp etc. -->
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
 
 	<root level="info">
 		<appender-ref ref="STDOUT" />
+		<appender-ref ref="WEB" />
 	</root>
 
 </configuration>

@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import berlin.action.GameRequestHandler;
 import berlin.action.request.GameRequest;
 import berlin.action.response.GameResponse;
+import berlin.logging.FixedMemoryLogbackAppender;
 
 public class BerlinAiServlet extends HttpServlet {	
 	
@@ -54,6 +55,7 @@ public class BerlinAiServlet extends HttpServlet {
 		writer.print("\n");
 		
 		gameRequestHandler.statusReport(writer);
+		FixedMemoryLogbackAppender.writeList(writer);
     }
 	
 	@Override
