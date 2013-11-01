@@ -1,7 +1,6 @@
 package berlin.strategy.starter;
 
 import java.util.List;
-import java.util.Random;
 
 import berlin.game.GameState;
 import berlin.game.Node;
@@ -11,8 +10,6 @@ import berlin.game.StrategyFactory;
 import com.google.common.collect.Lists;
 
 public class AllInAllTheTimeFactory implements StrategyFactory {
-
-	private final Random random = new Random();
 	
 	@Override
 	public Strategy pickStrategy(GameState gameState) {
