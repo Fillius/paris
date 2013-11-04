@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import berlin.game.GameState;
 import berlin.game.Node;
 import berlin.game.Strategy;
@@ -14,6 +17,8 @@ import com.google.common.collect.Lists;
 
 public class AllInAllTheTimeFactory implements StrategyFactory {
 	
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+
 	@Override
 	public Strategy pickStrategy(GameState gameState) {
 		return new AllInAllTheTimeStrategy(gameState);
@@ -46,13 +51,16 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 				});
 				
 				double nodeAverage = troopsTotal / (placesToGo.size() + 1);
+				
+				logger.debug(String.format("playerNode: %d, troopsTotal: %ld, nodeAverage: %ld",
+						playerNode.getNodeId(), troopsTotal, nodeAverage));
 
 				for (Node place : placesToGo) {
 					int placeTroops = place.getNumberOfSolders();
 					
-					if (place.getNumberOfSolders() > nodeAverage) {
+					if (placeTroops > nodeAverage) {
 						gameState.moveTroops(place, playerNode, placeTroops - (int)nodeAverage);
-					} else if (placeTroops > nodeAverage) {
+					} else if (placeTroops < nodeAverage) {
 						gameState.moveTroops(playerNode, place, (int) nodeAverage - placeTroops);
 					}
 				}
