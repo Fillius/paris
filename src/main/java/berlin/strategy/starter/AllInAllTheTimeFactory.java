@@ -52,7 +52,7 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 				
 				double nodeAverage = troopsTotal / (placesToGo.size() + 1);
 				
-				logger.debug(String.format("playerNode: %d, troopsTotal: %ld, nodeAverage: %ld",
+				logger.debug(String.format("playerNode: %d, troopsTotal: %.02f, nodeAverage: %.02f",
 						playerNode.getNodeId(), troopsTotal, nodeAverage));
 
 				for (Node place : placesToGo) {
