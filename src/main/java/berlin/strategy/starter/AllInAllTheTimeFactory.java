@@ -1,5 +1,8 @@
 package berlin.strategy.starter;
 
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import berlin.game.GameState;
@@ -28,18 +31,30 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 		@Override
 		public void move() {
 			for (Node playerNode : gameState.getPlayerNodes()) {
-				int troopsLeft = playerNode.getNumberOfSolders();
-
 				List<Node> placesToGo = Lists.newArrayList(playerNode.getOutboundNeighbours());
 				
-				int nodeAverage = troopsLeft / placesToGo.size();
-
-				for (Node destination : placesToGo) {
-					if (troopsLeft <= 0) {
-						break;
+				double troopsTotal = playerNode.getNumberOfSolders();
+				
+				for (Node place : placesToGo) {
+					troopsTotal += place.getNumberOfSolders();
+				}
+				
+				Collections.sort(placesToGo, new Comparator<Node>() {
+					public int compare(Node o1, Node o2) {
+						return new BigDecimal(o1.getNumberOfSolders()).compareTo(new BigDecimal(o2.getNumberOfSolders()));
 					}
+				});
+				
+				double nodeAverage = troopsTotal / (placesToGo.size() + 1);
+
+				for (Node place : placesToGo) {
+					int placeTroops = place.getNumberOfSolders();
 					
-					gameState.moveTroops(playerNode, destination, nodeAverage);
+					if (place.getNumberOfSolders() > nodeAverage) {
+						gameState.moveTroops(place, playerNode, placeTroops - (int)nodeAverage);
+					} else if (placeTroops > nodeAverage) {
+						gameState.moveTroops(playerNode, place, (int) nodeAverage - placeTroops);
+					}
 				}
 			}
 		}
