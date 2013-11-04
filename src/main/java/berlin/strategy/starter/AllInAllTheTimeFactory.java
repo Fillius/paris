@@ -42,36 +42,76 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 			for (Node playerNode : gameState.getPlayerNodes()) {
 				List<Node> placesToGo = Lists.newArrayList(playerNode.getOutboundNeighbours());
 				
+				StringBuilder sb = new StringBuilder();
+				
+				for (Node place : placesToGo) {
+					sb.append(String.format("%d,", place.getNodeId()));
+				}
+				
+				logger.debug("Before sort: " + sb.toString());
+
 				Collections.sort(placesToGo, new Comparator<Node>() {
 					public int compare(Node o1, Node o2) {
+						
+						/* If they're both mine, share the wealth */
 						if (myNode(o1) && myNode(o2)) {
+							return new BigDecimal(o1.getNumberOfSolders()).compareTo(
+									new BigDecimal(o2.getNumberOfSolders()));
+						}
+
+						/* If neither node is mine */
+						if (!myNode(o1) && !myNode(o2)) {
+							/* Prioritze the higher value node */
+							if (o1.getSoldiersGrantedPerTurn() > o2.getSoldiersGrantedPerTurn() ||
+									o1.getVictoryPointWorth() > o2.getVictoryPointWorth()) {
+								return 1;
+							}
+							
+							/* Prioritze the higher value node */
+							if (o2.getSoldiersGrantedPerTurn() > o1.getSoldiersGrantedPerTurn() ||
+									o2.getVictoryPointWorth() > o1.getVictoryPointWorth()) {
+								return -1;
+							}
+
+							/* Prioritise the node with fewer soldiers (for a better chance of winning) */
 							return new BigDecimal(o2.getNumberOfSolders()).compareTo(
 									new BigDecimal(o1.getNumberOfSolders()));
 						}
 						
-						if (myNode(o1)) {
-							return -1;
-						}
-						
+						/* Prioritize the node I don't own */
 						if (myNode(o2)) {
 							return 1;
+						} else {
+							return -1;
 						}
-						
-						return 0;
 					}
 				});
+				
+				sb = new StringBuilder();
+				
+				for (Node place : placesToGo) {
+					sb.append(String.format("%d,", place.getNodeId()));
+				}
+				
+				logger.debug("After sort: " + sb.toString());
 
 				int nodeTroops = playerNode.getNumberOfSolders();
 				
 				for (Node place : placesToGo) {
-					if (place.getOwner() != gameState.getPlayerId()) {
-						gameState.moveTroops(playerNode, place, playerNode.getNumberOfSolders());
-						break;
+					if (!myNode(place)) {
+						if (nodeTroops == 1) {
+							gameState.moveTroops(playerNode, place, 1);
+							break;
+						} else {
+							gameState.moveTroops(playerNode, place, nodeTroops - 1);
+							nodeTroops = 1;
+						}
+						continue;
 					}
 					
 					if (nodeTroops - 1 > place.getNumberOfSolders()) {
-						nodeTroops--;
 						gameState.moveTroops(playerNode, place, 1);
+						nodeTroops--;
 					}
 				}
 				
