@@ -1,8 +1,5 @@
 package berlin.strategy.starter;
 
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -38,32 +35,43 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 			for (Node playerNode : gameState.getPlayerNodes()) {
 				List<Node> placesToGo = Lists.newArrayList(playerNode.getOutboundNeighbours());
 				
-				double troopsTotal = playerNode.getNumberOfSolders();
-				
 				for (Node place : placesToGo) {
-					troopsTotal += place.getNumberOfSolders();
-				}
-				
-				Collections.sort(placesToGo, new Comparator<Node>() {
-					public int compare(Node o1, Node o2) {
-						return new BigDecimal(o1.getNumberOfSolders()).compareTo(new BigDecimal(o2.getNumberOfSolders()));
+					if (place.getOwner() != gameState.getPlayerId()) {
+						gameState.moveTroops(playerNode, place, playerNode.getNumberOfSolders() - 1);
+						break;
 					}
-				});
-				
-				double nodeAverage = troopsTotal / (placesToGo.size() + 1);
-				
-				logger.debug(String.format("playerNode: %d, troopsTotal: %.02f, nodeAverage: %.02f",
-						playerNode.getNodeId(), troopsTotal, nodeAverage));
-
-				for (Node place : placesToGo) {
-					int placeTroops = place.getNumberOfSolders();
 					
-					if (placeTroops > nodeAverage) {
-						gameState.moveTroops(place, playerNode, placeTroops - (int)nodeAverage);
-					} else if (placeTroops < nodeAverage) {
-						gameState.moveTroops(playerNode, place, (int) nodeAverage - placeTroops);
+					if (playerNode.getNumberOfSolders() - 1 > place.getNumberOfSolders()) {
+						gameState.moveTroops(playerNode, place, 1);
 					}
 				}
+				
+// double troopsTotal = playerNode.getNumberOfSolders();
+//
+// for (Node place : placesToGo) {
+// troopsTotal += place.getNumberOfSolders();
+// }
+//
+// Collections.sort(placesToGo, new Comparator<Node>() {
+// public int compare(Node o1, Node o2) {
+// return new BigDecimal(o1.getNumberOfSolders()).compareTo(new BigDecimal(o2.getNumberOfSolders()));
+// }
+// });
+//
+// double nodeAverage = troopsTotal / (placesToGo.size() + 1);
+//
+// logger.debug(String.format("playerNode: %d, troopsTotal: %.02f, nodeAverage: %.02f",
+// playerNode.getNodeId(), troopsTotal, nodeAverage));
+//
+// for (Node place : placesToGo) {
+// int placeTroops = place.getNumberOfSolders();
+//
+// if (placeTroops > nodeAverage) {
+// gameState.moveTroops(place, playerNode, placeTroops - (int)nodeAverage);
+// } else if (placeTroops < nodeAverage) {
+// gameState.moveTroops(playerNode, place, (int) nodeAverage - placeTroops);
+// }
+// }
 			}
 		}
 	}
