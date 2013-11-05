@@ -42,29 +42,7 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 		}
 
 		private boolean enemyNode(Node node) {
-			return node.getOwner() == gameState.getPlayerId();
-		}
-		
-		private void organizeDestinations(Node playerNode, List<Node> enemyNodes, List<Node> neutralNodes,
-				List<Node> myNodes) {
-			List<Node> placesToGo = Lists.newArrayList(playerNode.getOutboundNeighbours());
-			
-			for (Node place : placesToGo) {
-				if (enemyNode(place)) {
-					enemyNodes.add(place);
-					continue;
-				}
-				
-				if (neutralNode(place)) {
-					neutralNodes.add(place);
-					continue;
-				}
-				
-				if (myNode(place)) {
-					myNodes.add(place);
-					continue;
-				}
-			}
+			return !myNode(node) && !neutralNode(node);
 		}
 
 		@Override
@@ -75,7 +53,24 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 				List<Node> neutralNodes = new ArrayList<>();
 				List<Node> myNodes = new ArrayList<>();
 				
-				organizeDestinations(playerNode, enemyNodes, neutralNodes, myNodes);
+				List<Node> placesToGo = Lists.newArrayList(playerNode.getOutboundNeighbours());
+				
+				for (Node place : placesToGo) {
+					if (enemyNode(place)) {
+						enemyNodes.add(place);
+						continue;
+					}
+					
+					if (neutralNode(place)) {
+						neutralNodes.add(place);
+						continue;
+					}
+					
+					if (myNode(place)) {
+						myNodes.add(place);
+						continue;
+					}
+				}
 				
 				List<Node> otherNodes = new ArrayList<>();
 				
@@ -92,24 +87,24 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 
 				Collections.sort(otherNodes, new Comparator<Node>() {
 					public int compare(Node o1, Node o2) {
-						/* Prioritze the higher value node */
+						/* Prioritise the higher value node */
 						if (o1.getSoldiersGrantedPerTurn() > o2.getSoldiersGrantedPerTurn() ||
 								o1.getVictoryPointWorth() > o2.getVictoryPointWorth()) {
 							return 1;
 						}
 						
-						/* Prioritze the higher value node */
+						/* Prioritise the higher value node */
 						if (o2.getSoldiersGrantedPerTurn() > o1.getSoldiersGrantedPerTurn() ||
 								o2.getVictoryPointWorth() > o1.getVictoryPointWorth()) {
 							return -1;
 						}
 						
-						/* If the nodes are both enemies, prioritize the node with the highest soldiers */
+						/* If the nodes are both enemies, prioritise the node with the highest soldiers */
 						if (enemyNode(o1) && enemyNode(o2)) {
 							return new Integer(o1.getNumberOfSolders()).compareTo(new Integer(o2.getNumberOfSolders()));
 						}
 						
-						/* Always prioritize the enemy node */
+						/* Always prioritise the enemy node */
 						if (enemyNode(o1)) {
 							return 1;
 						} else if (enemyNode(o2)) {
