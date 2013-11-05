@@ -115,6 +115,10 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 					}
 				});
 				
+				/* Reverse the list into priority descending order */
+				Collections.reverse(otherNodes);
+				Collections.reverse(myNodes);
+
 				log = "";
 				
 				for (Node place : otherNodes) {
