@@ -77,13 +77,13 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 				otherNodes.addAll(enemyNodes);
 				otherNodes.addAll(neutralNodes);
 
-				StringBuilder sb = new StringBuilder();
+				String log = "";
 				
 				for (Node place : otherNodes) {
-					sb.append(String.format("%d,", place.getNodeId()));
+					log += String.format("%d,", place.getNodeId());
 				}
 				
-				logger.info("Before sort: " + sb.toString());
+				logger.info("Before sort: " + log);
 
 				Collections.sort(otherNodes, new Comparator<Node>() {
 					public int compare(Node o1, Node o2) {
@@ -115,13 +115,13 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 					}
 				});
 				
-				sb = new StringBuilder();
+				log = "";
 				
 				for (Node place : otherNodes) {
-					sb.append(String.format("%d,", place.getNodeId()));
+					log += String.format("%d,", place.getNodeId());
 				}
 				
-				logger.info("After sort: " + sb.toString());
+				logger.info("After sort: " + log);
 
 				int nodeTroops = playerNode.getNumberOfSolders();
 				
