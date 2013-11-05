@@ -1,6 +1,6 @@
 package berlin.strategy.starter;
 
-import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -36,83 +36,118 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 		private boolean myNode(Node node) {
 			return node.getOwner() == gameState.getPlayerId();
 		}
+		
+		private boolean neutralNode(Node node) {
+			return node.getOwner() == null;
+		}
+
+		private boolean enemyNode(Node node) {
+			return node.getOwner() == gameState.getPlayerId();
+		}
+		
+		private void organizeDestinations(Node playerNode, List<Node> enemyNodes, List<Node> neutralNodes,
+				List<Node> myNodes) {
+			List<Node> placesToGo = Lists.newArrayList(playerNode.getOutboundNeighbours());
+			
+			for (Node place : placesToGo) {
+				if (enemyNode(place)) {
+					enemyNodes.add(place);
+					continue;
+				}
+				
+				if (neutralNode(place)) {
+					neutralNodes.add(place);
+					continue;
+				}
+				
+				if (myNode(place)) {
+					myNodes.add(place);
+					continue;
+				}
+			}
+		}
 
 		@Override
 		public void move() {
 			for (Node playerNode : gameState.getPlayerNodes()) {
-				List<Node> placesToGo = Lists.newArrayList(playerNode.getOutboundNeighbours());
 				
+				List<Node> enemyNodes = new ArrayList<>();
+				List<Node> neutralNodes = new ArrayList<>();
+				List<Node> myNodes = new ArrayList<>();
+				
+				organizeDestinations(playerNode, enemyNodes, neutralNodes, myNodes);
+				
+				List<Node> otherNodes = new ArrayList<>();
+				
+				otherNodes.addAll(enemyNodes);
+				otherNodes.addAll(neutralNodes);
+
 				StringBuilder sb = new StringBuilder();
 				
-				for (Node place : placesToGo) {
+				for (Node place : otherNodes) {
 					sb.append(String.format("%d,", place.getNodeId()));
 				}
 				
-				logger.debug("Before sort: " + sb.toString());
+				logger.info("Before sort: " + sb.toString());
 
-				Collections.sort(placesToGo, new Comparator<Node>() {
+				Collections.sort(otherNodes, new Comparator<Node>() {
 					public int compare(Node o1, Node o2) {
-						
-						/* If they're both mine, share the wealth */
-						if (myNode(o1) && myNode(o2)) {
-							return new BigDecimal(o1.getNumberOfSolders()).compareTo(
-									new BigDecimal(o2.getNumberOfSolders()));
-						}
-
-						/* If neither node is mine */
-						if (!myNode(o1) && !myNode(o2)) {
-							/* Prioritze the higher value node */
-							if (o1.getSoldiersGrantedPerTurn() > o2.getSoldiersGrantedPerTurn() ||
-									o1.getVictoryPointWorth() > o2.getVictoryPointWorth()) {
-								return 1;
-							}
-							
-							/* Prioritze the higher value node */
-							if (o2.getSoldiersGrantedPerTurn() > o1.getSoldiersGrantedPerTurn() ||
-									o2.getVictoryPointWorth() > o1.getVictoryPointWorth()) {
-								return -1;
-							}
-
-							/* Prioritise the node with more soldiers */
-							return new BigDecimal(o1.getNumberOfSolders()).compareTo(
-									new BigDecimal(o2.getNumberOfSolders()));
-						}
-						
-						/* Prioritize the node I don't own */
-						if (myNode(o2)) {
+						/* Prioritze the higher value node */
+						if (o1.getSoldiersGrantedPerTurn() > o2.getSoldiersGrantedPerTurn() ||
+								o1.getVictoryPointWorth() > o2.getVictoryPointWorth()) {
 							return 1;
-						} else {
+						}
+						
+						/* Prioritze the higher value node */
+						if (o2.getSoldiersGrantedPerTurn() > o1.getSoldiersGrantedPerTurn() ||
+								o2.getVictoryPointWorth() > o1.getVictoryPointWorth()) {
 							return -1;
 						}
+						
+						/* If the nodes are both enemies, prioritize the node with the highest soldiers */
+						if (enemyNode(o1) && enemyNode(o2)) {
+							return new Integer(o1.getNumberOfSolders()).compareTo(new Integer(o2.getNumberOfSolders()));
+						}
+						
+						/* Always prioritize the enemy node */
+						if (enemyNode(o1)) {
+							return 1;
+						} else if (enemyNode(o2)) {
+							return -1;
+						}
+						
+						return 0;
 					}
 				});
 				
 				sb = new StringBuilder();
 				
-				for (Node place : placesToGo) {
+				for (Node place : otherNodes) {
 					sb.append(String.format("%d,", place.getNodeId()));
 				}
 				
-				logger.debug("After sort: " + sb.toString());
+				logger.info("After sort: " + sb.toString());
 
 				int nodeTroops = playerNode.getNumberOfSolders();
 				
-				for (Node place : placesToGo) {
+				for (Node place : otherNodes) {
 					if (nodeTroops <= 0) {
 						break;
 					}
-
-					if (!myNode(place)) {
-						gameState.moveTroops(playerNode, place, nodeTroops);
-						nodeTroops = 0;
+					
+					gameState.moveTroops(playerNode, place, nodeTroops);
+					nodeTroops = 0;
+				}
+				
+				for (Node place : myNodes) {
+					if (nodeTroops <= 0) {
 						break;
 					}
 					
-					/* If we own both nodes, just spread about until we can think of something better */
-					if (nodeTroops > place.getNumberOfSolders()) {
-						int move = nodeTroops / 2;
+					if (place.getNumberOfSolders() < nodeTroops) {
+						int move = nodeTroops - place.getNumberOfSolders();
 						gameState.moveTroops(playerNode, place, move);
-						nodeTroops -= move;
+						nodeTroops = nodeTroops - move;
 					}
 				}
 				
