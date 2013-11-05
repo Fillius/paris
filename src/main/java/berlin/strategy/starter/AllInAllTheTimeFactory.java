@@ -73,9 +73,9 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 								return -1;
 							}
 
-							/* Prioritise the node with fewer soldiers (for a better chance of winning) */
-							return new BigDecimal(o2.getNumberOfSolders()).compareTo(
-									new BigDecimal(o1.getNumberOfSolders()));
+							/* Prioritise the node with more soldiers */
+							return new BigDecimal(o1.getNumberOfSolders()).compareTo(
+									new BigDecimal(o2.getNumberOfSolders()));
 						}
 						
 						/* Prioritize the node I don't own */
@@ -98,20 +98,21 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 				int nodeTroops = playerNode.getNumberOfSolders();
 				
 				for (Node place : placesToGo) {
+					if (nodeTroops <= 0) {
+						break;
+					}
+
 					if (!myNode(place)) {
-						if (nodeTroops == 1) {
-							gameState.moveTroops(playerNode, place, 1);
-							break;
-						} else {
-							gameState.moveTroops(playerNode, place, nodeTroops - 1);
-							nodeTroops = 1;
-						}
-						continue;
+						gameState.moveTroops(playerNode, place, nodeTroops);
+						nodeTroops = 0;
+						break;
 					}
 					
-					if (nodeTroops - 1 > place.getNumberOfSolders()) {
-						gameState.moveTroops(playerNode, place, 1);
-						nodeTroops--;
+					/* If we own both nodes, just spread about until we can think of something better */
+					if (nodeTroops > place.getNumberOfSolders()) {
+						int move = nodeTroops / 2;
+						gameState.moveTroops(playerNode, place, move);
+						nodeTroops -= move;
 					}
 				}
 				
