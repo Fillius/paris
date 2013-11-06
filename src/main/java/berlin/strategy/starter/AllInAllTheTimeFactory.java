@@ -101,11 +101,25 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 
 				String log = "";
 				
+				for (Node place : enemyNodes) {
+					log += "e" + place.getNodeId() + ",";
+				}
+				
+				for (Node place : neutralNodes) {
+					log += "n" + place.getNodeId() + ",";
+				}
+				
+				for (Node place : myNodes) {
+					log += place.getNodeId() + ",";
+				}
+				
+				logger.info("Node " + playerNode.getNodeId() + " neighbors: " + log);
+
 				for (Node place : otherNodes) {
 					log += String.format("%d,", place.getNodeId());
 				}
 				
-				logger.info("Before sort: " + log);
+				logger.info("Node " + playerNode.getNodeId() + " before sort: " + log);
 
 				Collections.sort(otherNodes, new Comparator<Node>() {
 					public int compare(Node o1, Node o2) {
@@ -148,20 +162,18 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 					log += String.format("%d,", place.getNodeId());
 				}
 				
-				logger.info("After sort: " + log);
+				logger.info("Node " + playerNode.getNodeId() + " after sort: " + log);
 
 				int nodeTroops = playerNode.getNumberOfSolders();
 				
 				for (Node place : otherNodes) {
-					if (nodeTroops <= 0) {
+					if (nodeTroops <= 1) {
 						break;
 					}
 					
 					int move = nodeTroops - 1;
 					
-					if (move == 0) {
-						move = 1;
-					} else if (move > place.getNumberOfSolders() * 2) {
+					if (move > place.getNumberOfSolders() * 2) {
 						move = place.getNumberOfSolders() * 2;
 					}
 					
@@ -170,7 +182,7 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 				}
 				
 				for (Node place : myNodes) {
-					if (nodeTroops <= 0) {
+					if (nodeTroops <= 1) {
 						break;
 					}
 					
@@ -178,7 +190,7 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 						int move = nodeTroops - place.getNumberOfSolders();
 						gameState.moveTroops(playerNode, place, move);
 						nodeTroops = nodeTroops - move;
-					} else if (place.getNumberOfSolders() == 0) {
+					} else if (place.getNumberOfSolders() == 0 || nodeTroops >= 3 * place.getNumberOfSolders()) {
 						gameState.moveTroops(playerNode, place, 1);
 						nodeTroops--;
 					}
