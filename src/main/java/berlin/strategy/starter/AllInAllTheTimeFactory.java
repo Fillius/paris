@@ -137,6 +137,8 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 				logger.info("Node " + playerNode.getNodeId() + " after sort: " + log);
 
 				int nodeTroops = playerNode.getNumberOfSolders();
+
+				int average = nodeTroops / enemyNodes.size();
 				
 				for (Node place : enemyNodes) {
 					if (nodeTroops <= 1) {
@@ -144,7 +146,13 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 					}
 					
 					int move = nodeTroops - 1;
+					
 					int optimalMove = place.getNumberOfSolders() + 1;
+					
+					if (gameState.getCurrentTurn() < 6) {
+						move += 1;
+						optimalMove = average;
+					}
 					
 					if (move > optimalMove) {
 						move = optimalMove;
