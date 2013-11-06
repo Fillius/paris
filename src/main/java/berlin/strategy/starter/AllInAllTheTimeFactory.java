@@ -44,6 +44,28 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 		private boolean enemyNode(Node node) {
 			return !myNode(node) && !neutralNode(node);
 		}
+		
+		private Integer nodeValue(Node node) {
+			int value = 1;
+			
+			if (node.getNumberOfSolders() > 0) {
+				if (gameState.getCurrentTurn() < gameState.getMaximumTurns() / 2) {
+					value += 1;
+				} else {
+					value += 2;
+				}
+			}
+			
+			if (node.getVictoryPointWorth() > 0) {
+				if (gameState.getCurrentTurn() < gameState.getMaximumTurns() / 2) {
+					value += 1;
+				} else {
+					value += 2;
+				}
+			}
+			
+			return value;
+		}
 
 		@Override
 		public void move() {
@@ -87,16 +109,11 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 
 				Collections.sort(otherNodes, new Comparator<Node>() {
 					public int compare(Node o1, Node o2) {
-						/* Prioritise the higher value node */
-						if (o1.getSoldiersGrantedPerTurn() > o2.getSoldiersGrantedPerTurn() ||
-								o1.getVictoryPointWorth() > o2.getVictoryPointWorth()) {
-							return 1;
-						}
+						int nodeValueComparison = nodeValue(o1).compareTo(nodeValue(o2));
 						
 						/* Prioritise the higher value node */
-						if (o2.getSoldiersGrantedPerTurn() > o1.getSoldiersGrantedPerTurn() ||
-								o2.getVictoryPointWorth() > o1.getVictoryPointWorth()) {
-							return -1;
+						if (nodeValueComparison != 0) {
+							return nodeValueComparison;
 						}
 						
 						/* If the nodes are both enemies, prioritise the node with the highest soldiers */
@@ -112,6 +129,12 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 						}
 						
 						return 0;
+					}
+				});
+				
+				Collections.sort(myNodes, new Comparator<Node>() {
+					public int compare(Node o1, Node o2) {
+						return nodeValue(o1).compareTo(nodeValue(o2));
 					}
 				});
 				
@@ -134,8 +157,16 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 						break;
 					}
 					
-					gameState.moveTroops(playerNode, place, nodeTroops);
-					nodeTroops = 0;
+					int move = nodeTroops - 1;
+					
+					if (move == 0) {
+						move = 1;
+					} else if (move > place.getNumberOfSolders() * 2) {
+						move = place.getNumberOfSolders() * 2;
+					}
+					
+					gameState.moveTroops(playerNode, place, move);
+					nodeTroops = nodeTroops - move;
 				}
 				
 				for (Node place : myNodes) {
@@ -143,10 +174,13 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 						break;
 					}
 					
-					if (place.getNumberOfSolders() < nodeTroops) {
+					if (nodeValue(place) > nodeValue(playerNode) && place.getNumberOfSolders() < nodeTroops) {
 						int move = nodeTroops - place.getNumberOfSolders();
 						gameState.moveTroops(playerNode, place, move);
 						nodeTroops = nodeTroops - move;
+					} else if (place.getNumberOfSolders() == 0) {
+						gameState.moveTroops(playerNode, place, 1);
+						nodeTroops--;
 					}
 				}
 				
