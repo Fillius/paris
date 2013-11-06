@@ -44,7 +44,7 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 		private Integer nodeValue(Node node) {
 			int value = 1;
 			
-			if (node.getNumberOfSolders() > 0) {
+			if (node.getSoldiersGrantedPerTurn() > 0) {
 				if (gameState.getCurrentTurn() < gameState.getMaximumTurns() / 2) {
 					value += 1;
 				} else {
@@ -73,14 +73,10 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 				List<Node> placesToGo = Lists.newArrayList(playerNode.getOutboundNeighbours());
 				
 				for (Node place : placesToGo) {
-					if (enemyNode(place)) {
-						enemyNodes.add(place);
-						continue;
-					}
-					
 					if (myNode(place)) {
 						myNodes.add(place);
-						continue;
+					} else {
+						enemyNodes.add(place);
 					}
 				}
 				
@@ -147,7 +143,7 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 					
 					int move = nodeTroops - 1;
 					
-					int optimalMove = place.getNumberOfSolders() + 1;
+					int optimalMove = place.getNumberOfSolders() + 2;
 					
 					if (gameState.getCurrentTurn() < 6) {
 						move += 1;
