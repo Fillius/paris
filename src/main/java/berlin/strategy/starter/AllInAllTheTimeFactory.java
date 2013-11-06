@@ -144,7 +144,7 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 					}
 					
 					int move = nodeTroops - 1;
-					int optimalMove = (int) ((place.getNumberOfSolders() + 1) * 1.5);
+					int optimalMove = place.getNumberOfSolders() + 1;
 					
 					if (move > optimalMove) {
 						move = optimalMove;
@@ -163,7 +163,10 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 						int move = nodeTroops - place.getNumberOfSolders();
 						gameState.moveTroops(playerNode, place, move);
 						nodeTroops = nodeTroops - move;
-					} else if (place.getNumberOfSolders() == 0 || nodeTroops >= 3 * place.getNumberOfSolders()) {
+					} else if (nodeTroops >= place.getNumberOfSolders() + 5) {
+						gameState.moveTroops(playerNode, place, 2);
+						nodeTroops -= 2;
+					} else if (place.getNumberOfSolders() == 0) {
 						gameState.moveTroops(playerNode, place, 1);
 						nodeTroops--;
 					}
