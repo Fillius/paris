@@ -36,13 +36,9 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 		private boolean myNode(Node node) {
 			return node.getOwner() == gameState.getPlayerId();
 		}
-		
-		private boolean neutralNode(Node node) {
-			return node.getOwner() == null;
-		}
 
 		private boolean enemyNode(Node node) {
-			return !myNode(node) && !neutralNode(node);
+			return !myNode(node);
 		}
 		
 		private Integer nodeValue(Node node) {
@@ -72,7 +68,6 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 			for (Node playerNode : gameState.getPlayerNodes()) {
 				
 				List<Node> enemyNodes = new ArrayList<>();
-				List<Node> neutralNodes = new ArrayList<>();
 				List<Node> myNodes = new ArrayList<>();
 				
 				List<Node> placesToGo = Lists.newArrayList(playerNode.getOutboundNeighbours());
@@ -83,30 +78,16 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 						continue;
 					}
 					
-					if (neutralNode(place)) {
-						neutralNodes.add(place);
-						continue;
-					}
-					
 					if (myNode(place)) {
 						myNodes.add(place);
 						continue;
 					}
 				}
 				
-				List<Node> otherNodes = new ArrayList<>();
-				
-				otherNodes.addAll(enemyNodes);
-				otherNodes.addAll(neutralNodes);
-
 				String log = "";
 				
 				for (Node place : enemyNodes) {
 					log += "e" + place.getNodeId() + ",";
-				}
-				
-				for (Node place : neutralNodes) {
-					log += "n" + place.getNodeId() + ",";
 				}
 				
 				for (Node place : myNodes) {
@@ -114,14 +95,16 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 				}
 				
 				logger.info("Node " + playerNode.getNodeId() + " neighbors: " + log);
+				
+				log = "";
 
-				for (Node place : otherNodes) {
+				for (Node place : enemyNodes) {
 					log += String.format("%d,", place.getNodeId());
 				}
 				
 				logger.info("Node " + playerNode.getNodeId() + " before sort: " + log);
 
-				Collections.sort(otherNodes, new Comparator<Node>() {
+				Collections.sort(enemyNodes, new Comparator<Node>() {
 					public int compare(Node o1, Node o2) {
 						int nodeValueComparison = nodeValue(o1).compareTo(nodeValue(o2));
 						
@@ -130,19 +113,8 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 							return nodeValueComparison;
 						}
 						
-						/* If the nodes are both enemies, prioritise the node with the highest soldiers */
-						if (enemyNode(o1) && enemyNode(o2)) {
-							return new Integer(o1.getNumberOfSolders()).compareTo(new Integer(o2.getNumberOfSolders()));
-						}
-						
-						/* Always prioritise the enemy node */
-						if (enemyNode(o1)) {
-							return 1;
-						} else if (enemyNode(o2)) {
-							return -1;
-						}
-						
-						return 0;
+						/* Prioritise the node with the highest soldiers */
+						return new Integer(o1.getNumberOfSolders()).compareTo(new Integer(o2.getNumberOfSolders()));
 					}
 				});
 				
@@ -153,12 +125,12 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 				});
 				
 				/* Reverse the list into priority descending order */
-				Collections.reverse(otherNodes);
+				Collections.reverse(enemyNodes);
 				Collections.reverse(myNodes);
 
 				log = "";
 				
-				for (Node place : otherNodes) {
+				for (Node place : enemyNodes) {
 					log += String.format("%d,", place.getNodeId());
 				}
 				
@@ -166,15 +138,16 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 
 				int nodeTroops = playerNode.getNumberOfSolders();
 				
-				for (Node place : otherNodes) {
+				for (Node place : enemyNodes) {
 					if (nodeTroops <= 1) {
 						break;
 					}
 					
 					int move = nodeTroops - 1;
+					int optimalMove = (int) ((place.getNumberOfSolders() + 1) * 1.5);
 					
-					if (move > place.getNumberOfSolders() * 2) {
-						move = place.getNumberOfSolders() * 2;
+					if (move > optimalMove) {
+						move = optimalMove;
 					}
 					
 					gameState.moveTroops(playerNode, place, move);

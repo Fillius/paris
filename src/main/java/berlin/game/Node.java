@@ -19,7 +19,7 @@ public interface Node {
 	int getSoldiersGrantedPerTurn();
 	
 	@Property("owner")
-	Integer getOwner();
+	int getOwner();
 	
 	@Property("soldiers")
 	int getNumberOfSolders();
