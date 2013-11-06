@@ -37,9 +37,9 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 			return node.getOwner() == gameState.getPlayerId();
 		}
 
-		private boolean enemyNode(Node node) {
-			return !myNode(node);
-		}
+// private boolean enemyNode(Node node) {
+// return !myNode(node);
+// }
 		
 		private Integer nodeValue(Node node) {
 			int value = 1;
@@ -72,6 +72,14 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 				
 				List<Node> placesToGo = Lists.newArrayList(playerNode.getOutboundNeighbours());
 				
+				String log = "";
+				
+				for (Node place : placesToGo) {
+					log += "{" + place.getNodeId() + "," + place.getOwner() + "},";
+				}
+				
+				logger.info("Node " + playerNode.getNodeId() + " neighbors: " + log);
+
 				for (Node place : placesToGo) {
 					if (myNode(place)) {
 						myNodes.add(place);
@@ -80,7 +88,7 @@ public class AllInAllTheTimeFactory implements StrategyFactory {
 					}
 				}
 				
-				String log = "";
+				log = "";
 				
 				for (Node place : enemyNodes) {
 					log += "e" + place.getNodeId() + ",";
